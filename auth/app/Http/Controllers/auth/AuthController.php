@@ -39,18 +39,19 @@ class AuthController extends Controller
      * @param AuthRequest $request
      * $return JsonResponse
      */
-    public function Register(AuthRequest $request): JsonResponse
+    public function register(AuthRequest $request): JsonResponse
     {
         $user = $this->authService->register($request->validated());
-        $token = $this->authService->login($request->validated());
+        $token = $user->createToken('auth-token')->plainTextToken;
 
-        return $user->createToken('auth-token')->plainTextToken;
+        return response()->json([
+            'token' => $token
+        ]);
     }
 
     public function logout(Request $request): JsonResponse
     {
         $this->authService->logout($request->user());
-
 
         return response()->json(status: Response::HTTP_NO_CONTENT);
     }
