@@ -137,7 +137,6 @@ abstract class Repository
                         array_intersect_key($relationData, $attributes),
                         array_diff_key($relationData, $attributes)
                     );
-
                 }
             }
         });
