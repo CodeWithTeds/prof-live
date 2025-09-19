@@ -9,7 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Throwable;
-
+use Illuminate\Support\Facades\Auth;
 class UserController extends Controller
 {
     /**
@@ -83,9 +83,9 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(User $user)
     {
-        //
+        $this->userRepository->delete($user);
     }
 
     public function forceDelete(int $id): JsonResponse

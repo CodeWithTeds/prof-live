@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('status')->default('pending');
             $table->string('priority')->default('medium');
-            $table->timestamp('due_data')->nullable();
+            $table->timestamp('due_date')->nullable();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
             $table->softDeletes();
