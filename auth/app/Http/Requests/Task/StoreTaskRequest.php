@@ -22,7 +22,12 @@ class StoreTaskRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => 'nullable|string|in:pending,in_progress,completed,cancelled',
+            'priority' => 'nullable|string|in:low,medium,high',
+            'due_date' => 'nullable|date',
+            'user_id' => 'nullable|exists:users,id',
         ];
     }
 }

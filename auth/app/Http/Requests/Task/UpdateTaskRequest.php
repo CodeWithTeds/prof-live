@@ -22,7 +22,12 @@ class UpdateTaskRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'title' => 'sometimes|string|max:255',
+            'description' => 'sometimes|nullable|string',
+            'status' => 'sometimes|nullable|string|in:pending,in_progress,completed,cancelled',
+            'priority' => 'sometimes|nullable|string|in:low,medium,high',
+            'due_date' => 'sometimes|nullable|date',
+            'user_id' => 'sometimes|nullable|exists:users,id',
         ];
     }
 }

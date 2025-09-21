@@ -58,12 +58,12 @@ class TaskController extends BaseApiController
         return $this->successResponse($task, 'Task retrieved Successfully');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function restore(int $id): JsonResponse
     {
-        //
+        $task = Task::withTrashed()->findorFail($id);
+        $this->taskRespository->restore($task);
+
+        return $this->successResponse($task->fresh(), 'Task restored succesfully');
     }
 
     /**
@@ -93,6 +93,13 @@ class TaskController extends BaseApiController
         return $this->successResponse(null, 'trashed tasks retrieved successfully');
     }
 
+    public function getByStatus(string $status): JsonResponse
+    {
+        $tasks = $this->taskRespository->getByStatus($status);
+
+        return $this->successResponse($tasks, "Tasks with status '{$status}' retrived successfully");
+    }
+
     public function getDueToday(): JsonResponse
     {
         $tasks = $this->taskRespository->getDueToday();
@@ -119,6 +126,8 @@ class TaskController extends BaseApiController
 
     public function getOverdue(): JsonResponse
     {
+        $tasks = $this->taskRespository->getOverdue();
 
+        return $this->successResponse($tasks, 'overdue tasks retrieved successfully');
     }
 }
