@@ -22,9 +22,19 @@ class AuthRequest extends FormRequest
      */
     public function rules(): array
     {
+        $isLogin = $this->routeIs('login') || $this->is('api/login');
+        
+        if ($isLogin) {
+            return [
+                'email' => ['required', 'string', 'email', 'max:255'],
+                'password' => ['required', 'string', 'min:8'],
+            ];
+        }
+        
+        // Registration rules
         return [
-            'name' => ['required', 'string', 'max:155'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users, email'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ];
     }
