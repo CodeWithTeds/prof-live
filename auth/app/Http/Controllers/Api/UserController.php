@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\leoRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Repositories\UserRepository;
 use Illuminate\Http\JsonResponse;
@@ -98,4 +99,6 @@ class UserController extends Controller
             'message' => 'User deleted Successfully'
         ]);
     }
+
+
 }
