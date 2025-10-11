@@ -8,10 +8,15 @@ use App\Http\Requests\Task\StoreTaskRequest;
 use App\Repositories\TaskRespository;
 use Illuminate\Http\Request;
 use App\Models\Task;
-use App\Repositories\TaskRepository;
+use App\Request\Task\ManageTaskDependencyRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use App\Services\Task\TaskDependencyService;
 use App\Http\Controllers\Api\BaseApiController;
+use App\Http\Requests\Task\GetTasksByUserRequest;
+use App\Http\Requests\Task\UpdateTaskStatusRequest;
+use Symfony\Component\HttpFoundation\Response;
+
 
 class TaskController extends BaseApiController
 {
@@ -76,6 +81,14 @@ class TaskController extends BaseApiController
         return $this->successResponse($task->fresh(), 'Task Updated  Scuccessfully');
     }
 
+    public function getByUser(GetTasksByUserRequest $request): JsonResponse
+    {
+        $userId = (int) $request->validated()['user_id'];
+        $tasks = $this->taskRespository->getByUser($userId);
+
+        return $this->successResponse($tasks, "Task for user '{$userId}' retrived successfully");
+    }
+
     /**
      * Remove the specified resource from storage.
      */
@@ -97,7 +110,7 @@ class TaskController extends BaseApiController
     {
         $tasks = $this->taskRespository->getByStatus($status);
 
-        return $this->successResponse($tasks, "Tasks with status '{$status}' retrived successfully");
+            return $this->successResponse($tasks, "Tasks with status '{$status}' retrived successfully");
     }
 
     public function getDueToday(): JsonResponse
@@ -129,5 +142,29 @@ class TaskController extends BaseApiController
         $tasks = $this->taskRespository->getOverdue();
 
         return $this->successResponse($tasks, 'overdue tasks retrieved successfully');
+    }
+
+    public function updateStatus(UpdateTaskStatusRequest $request, Task $task): JsonResponse
+    {
+        $newStatus = $request->validated()['status'];
+
+        if (in_array($newStatus, ['in_process', 'completed'])) {
+            $service = new TaskDependencyService();
+            if (!$service->dependenciesCompleted($task->id)) {
+                $incomplete = $service->getIncompleteDependencies($task->id);
+                return $this->errorResponse('Task has incomplete dependencies', Response::HTTP_NOT_FOUND, ['dependencies => incomplete']);
+            }
+        }
+
+        $this->taskRespository->updateStatus($task, $newStatus);
+
+        return $this->successResponse($task->fresh(), 'Task status updated Successfully');
+    }
+
+    public function updatePriority(UpdateTaskStatusRequest $request, Task $task): JsonResponse
+    {
+        $this->taskRespository->updatePriority($task, $request->validated()['priority']);
+
+        return $this->successResponse($task->fresh(), 'Task priority updated successfully');
     }
 }

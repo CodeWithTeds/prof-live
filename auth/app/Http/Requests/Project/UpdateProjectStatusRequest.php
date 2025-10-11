@@ -22,7 +22,7 @@ class UpdateProjectStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'status' => 'required|in:planning,active,on_hold,completed,cancelled',
         ];
     }
 }

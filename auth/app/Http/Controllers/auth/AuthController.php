@@ -18,7 +18,7 @@ class AuthController extends Controller
      *
      * Construction property promotion
      * about boilerplate
-     *
+     -------------------------------------------------------------------------*
      */
     public function __construct(private readonly AuthService $authService) {}
 

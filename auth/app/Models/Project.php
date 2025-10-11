@@ -21,7 +21,7 @@ class Project extends Model
         'start_date',
         'end_date',
         'budget',
-        'project_id',
+        'user_id',
 
     ];
 
@@ -32,7 +32,7 @@ class Project extends Model
             'due_date' => 'datetime',
             'end_date' => 'datetime',
             'budget' => 'decimal:2',
-            'deleted_at' => 'datatime',
+            'deleted_at' => 'datetime',
         ];
     }
 

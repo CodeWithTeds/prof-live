@@ -16,7 +16,7 @@ class BaseApiController extends Controller
             'message' => $message
         ];
         if ($data !== null) {
-            $response['errors'] =  $data;
+            $response['data'] =  $data;
         }
         return response()->json($response, $statusCode);
     }

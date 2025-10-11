@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Project;
+namespace App\Http\Requests\Task;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdatePriorityRequest extends FormRequest
+class GetTasksByUserRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,7 +22,7 @@ class UpdatePriorityRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'priority' => 'required|in:low,medium,high,urgent',
+            'user_id' => 'required|integer|exists:users,id',
         ];
     }
 }

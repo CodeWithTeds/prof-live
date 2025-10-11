@@ -9,15 +9,15 @@ use Illuminate\Http\Request;
 use App\Repositories\ProjectRepository;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Response;
+use App\Http\Requests\Project\UpdateProjectStatusRequest;
 
 class ProjectController extends BaseApiController
 {
 
-    public function __construct(protected ProjectRepository $projectRepository)
-    {
-    }
+    public function __construct(protected ProjectRepository $projectRepository) {}
+
     /**
-     * Display a listing of the resource.
+     * Display a listing of the resource.x
      */
     public function index(Request $request): JsonResponse
     {
@@ -43,26 +43,18 @@ class ProjectController extends BaseApiController
         $validated = $request->validated();
 
         $project = $this->projectRepository->create($validated);
-
         return $this->createdResponse($project, 'Project Created Successfully');
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified resource.git push origin master:main
+
      */
     public function show(int $id): JsonResponse
     {
-        $project = $this->projectRepository->find($id,['*'], ['user', 'tasks']);
+        $project = $this->projectRepository->find($id, ['*'], ['user', 'tasks']);
 
         return $this->successResponse($project);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
     }
 
     /**
@@ -76,8 +68,7 @@ class ProjectController extends BaseApiController
 
         $this->projectRepository->update($project, $validated);
 
-        return $this->successResponse($project->fresh(),'Project Updated successfully');
-
+        return $this->successResponse($project->fresh(), 'Project Updated successfully');
     }
 
     /**
@@ -115,19 +106,36 @@ class ProjectController extends BaseApiController
         return $this->successResponse($project);
     }
 
-    public function getCompletedProjects(Request $request):JsonResponse
+    public function getCompletedProjects(Request $request): JsonResponse
     {
         $project = $this->projectRepository->getCompletedProject();
 
         return $this->successResponse($project);
     }
 
-    public function getOverdueProjects(Request $request):JsonResponse
+    public function getOverdueProjects(Request $request): JsonResponse
     {
         $project = $this->projectRepository->getOverDueProjects();
-
         return $this->successResponse();
     }
 
-    public function
+    public function updateStatus(UpdateProjectStatusRequest $request, int $id): JsonResponse
+    {
+        $validated = $request->validated();
+        $project = $this->projectRepository->find($id);
+        $this->projectRepository->updateStatus($project, $validated['status']);
+
+        return $this->successResponse($project->fresh(), 'Project Status updated Successfully');
+    }
+
+    public function updatePriority(UpdateProjectStatusRequest $request, int $id): JsonResponse
+    {
+        $validated = $request->vadidated();
+
+        $project = $this->projectRepository->find($id);
+
+        $this->projectRepository->updatePriority($project, $validated['priority']);
+
+        return $this->successResponse($project->fresh() . 'Project priority updated successfully');
+    }
 }

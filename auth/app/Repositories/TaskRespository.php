@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\Task;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class TaskRespository extends Repository
 {
@@ -58,4 +59,41 @@ class TaskRespository extends Repository
             ->where('status', '!=', 'completed')
             ->get();
     }
+
+    public function removeDependency(int $taskId, int $dependsOnTaskId): bool
+    {
+        $task = $this->query()->findOrFail($taskId);
+        $task->dependencies()->detach($dependsOnTaskId);
+
+        return true;
+    }
+
+    public function addDependency(int $taskId, int $dependsOnTaskId): bool
+    {
+        $task = $this->query()->findOrFail($taskId);
+        $task->dependencies()->syncWithoutDetaching([$dependsOnTaskId]);
+
+        return true;
+    }
+
+    public function getDependencies(int $taskId): Collection
+    {
+        $task = $this->query()->findOrFail($taskId);
+        return $task->dependencies()->get();
+    }
+
+    public function getDependents(int $taskId): Collection
+    {
+        $task = $this->query()->findOrFail($taskId);
+        return $task->dependent()->get();
+    }
+
+    public function getDependencyIds(int  $taskId): array
+    {
+        return DB::table('task_dependencies')
+            ->where('task_id', $taskId)
+            ->pluck('depends_on_task_id')
+            ->all();
+    }
+
 }
