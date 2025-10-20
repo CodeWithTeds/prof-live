@@ -5,8 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\BelongsToRelationship;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Models\Tag;
 
 class Task extends Model
 {
@@ -18,6 +19,7 @@ class Task extends Model
         'due_date',
         'user_id',
         'project_id',
+        'code',
     ];
 
     protected function casts(): array
@@ -52,4 +54,18 @@ class Task extends Model
         return $this->belongsToMany(Task::class, 'task_dependencies', 'depends_on_task_id', 'task_id');
     }
 
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Task::class, 'task_tag');
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Task::class, 'parent_id');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(Task::class, 'parent_id');
+    }
 }

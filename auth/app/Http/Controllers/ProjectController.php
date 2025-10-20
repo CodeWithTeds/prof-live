@@ -32,7 +32,6 @@ class ProjectController extends BaseApiController
      */
     public function create()
     {
-        //
     }
 
     /**
