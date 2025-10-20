@@ -20,7 +20,7 @@ abstract class Repository
      * Avoid Boiler Plate
      * Construction Property Promotion
      */
-    public function __construct(protected Model $model) {}
+        public function __construct(protected Model $model) {}
 
     /**
      *

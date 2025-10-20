@@ -42,3 +42,4 @@ Route::controller(TaskController::class)->group(function (){
     Route::patch('/tasks/{task}/status', 'updateStatus');
     Route::patch('/tasks/{task}/priorty', 'updatePriority');
 });
+

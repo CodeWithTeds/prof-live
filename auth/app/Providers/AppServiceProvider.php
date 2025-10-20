@@ -12,6 +12,7 @@ use App\Repositories\TaskRespository;
 use App\Repositories\UserRepository;
 
 use App\Services\Auth\AuthService;
+use App\Services\Task\SubtaskService;
 use Illuminate\Support\ServiceProvider;
 
 
@@ -19,17 +20,14 @@ class AppServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.
-     */
+    */
     public function register(): void {
         $this->app->bind(ProjectRepository::class, function ($app) {
             return new ProjectRepository(new Project());
         });
+
         $this->app->bind(TaskRespository::class, function ($app) {
             return new TaskRespository(new Task());
-        });
-
-        $this->app->bind(TagRepository::class, function ($app){
-            return new TagRepository(new Tag());
         });
     }
 

@@ -14,8 +14,12 @@ use Illuminate\Support\Facades\Auth;
 use App\Services\Task\TaskDependencyService;
 use App\Http\Controllers\Api\BaseApiController;
 use App\Http\Requests\Task\GetTasksByUserRequest;
+use App\Http\Requests\Task\ManageSubTaskRequest;
 use App\Http\Requests\Task\UpdateTaskStatusRequest;
 use Symfony\Component\HttpFoundation\Response;
+use App\Services\Task\SubtaskService;
+
+
 
 
 class TaskController extends BaseApiController
@@ -25,7 +29,10 @@ class TaskController extends BaseApiController
      *
      * @param TaskRepository
      */
-    public function __construct(protected TaskRespository $taskRespository) {}
+    public function __construct(
+        protected TaskRespository $taskRespository,
+        protected SubtaskService $subtaskService
+    ) {}
 
     /**
      * Display a listing of the resource.
@@ -37,7 +44,6 @@ class TaskController extends BaseApiController
 
         return $this->successResponse($tasks, 'Tasks Retrieved Successfully');
     }
-
 
     /**
      * Store a newly created resource in storage.
@@ -110,7 +116,7 @@ class TaskController extends BaseApiController
     {
         $tasks = $this->taskRespository->getByStatus($status);
 
-            return $this->successResponse($tasks, "Tasks with status '{$status}' retrived successfully");
+        return $this->successResponse($tasks, "Tasks with status '{$status}' retrived successfully");
     }
 
     public function getDueToday(): JsonResponse
@@ -156,8 +162,13 @@ class TaskController extends BaseApiController
             }
         }
 
-        $this->taskRespository->updateStatus($task, $newStatus);
+        // enforce incomplete subtasks
+        if (!$this->subtaskService->subtasksCompleted($task->id)) {
+            $incomplete = $this->subtaskService->getIncompleteSubtasks($task->id);
+            return $this->errorResponse('Task has incomplete subtask', Response::HTTP_NOT_FOUND, ['subtasks' => 'incomplete']);
+        }
 
+        $this->taskRespository->updateStatus($task, $newStatus);
         return $this->successResponse($task->fresh(), 'Task status updated Successfully');
     }
 
@@ -167,4 +178,5 @@ class TaskController extends BaseApiController
 
         return $this->successResponse($task->fresh(), 'Task priority updated successfully');
     }
+
 }
