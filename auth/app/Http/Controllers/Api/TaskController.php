@@ -133,6 +133,11 @@ class TaskController extends BaseApiController
         return $this->successResponse($tasks, "Tasks with priority '{$priority}' retrieved succussfully");
     }
 
+    // public function getByPriority1(string $priority): JsonResponse
+    // {
+    //     return $this->successResponse($this->taskRespository->getByPriority($priority), "Tasks with priority '{$priority}' retrieved successfully");
+    // }
+
 
     public function getUpcoming(Request $request): JsonResponse
     {
@@ -178,5 +183,4 @@ class TaskController extends BaseApiController
 
         return $this->successResponse($task->fresh(), 'Task priority updated successfully');
     }
-
 }
