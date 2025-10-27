@@ -5,63 +5,60 @@ namespace App\Services\Task;
 use App\Models\Task;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Repositories\TaskRespository;
 
 class TaskDependencyService
 {
 
-    public function addDependency(int $taskId, int $dependsOnTaskId): bool
+    public function __construct(protected TaskRespository $taskRepository)
     {
-        return DB::transaction(function () use ($taskId, $dependsOnTaskId) {
-            $task = Task::findOrFail($taskId);
-            $dependsOn = Task::findOrFail($dependsOnTaskId);
+    }
+
+    public function addDependency(Task $task, Task $dependsOnTaskId): bool
+    {
+        return DB::transaction(function () use ($task, $dependsOnTaskId) {
 
             // Prevent for circular dependency
-            if ($this->createCycle($dependsOnTaskId, $taskId)) {
+            if ($this->createCycle($task, $dependsOnTaskId)) {
                 return false;
             }
 
-            // Add dependency without removing existing ones
-            $task->dependencies()->syncWithoutDetaching([$dependsOnTaskId]);
+            $this->taskRepository->addDependency($task, $dependsOnTaskId);
 
             return true;
         });
     }
 
-    public function getDependents(int $taskId)
+    public function getDependents(int $task)
     {
-        $task = Task::findOrFail($taskId);
-        return $task->dependencies()->get();
+        return $this->taskRepository->getDependents($task);
     }
 
-    public function getDependencies(int $taskId)
+    public function getDependencies(Task $task)
     {
-        $task = Task::findOrFail($taskId);
-        return $task->dependencies()->get();
+        return $this->taskRepository->getDependencies($task->id);
     }
 
     public function dependenciesCompleted(int $taskId): bool
     {
-        $dependencyIds = DB::table('task_dependencies')
-            ->where('task_id', $taskId)
-            ->pluck('depends_on_task_id')
-            ->all();
+        $task = $this->taskRepository->query()->findOrFail($taskId);
+        $dependencyIds = $this->taskRepository->getDependencyIds($task);
 
         if (empty($dependencyIds)) {
-            return false;
+            return true;
         }
-        $incompleteCount = Task::whereIn('tasks')
-            ->whereIn('id', $dependencyIds)
+
+        $incompleteCount = Task::whereIn('id', $dependencyIds)
             ->where('status', '!=', 'completed')
             ->count();
 
         return $incompleteCount === 0;
     }
 
-    public function removeDependency(int $taskId, int $dependsOnTaskId): bool
+    public function removeDependency(Task $task, Task $dependsOnTaskId): bool
     {
-        return DB::transaction(function () use ($taskId, $dependsOnTaskId) {
-            $task = Task::findOrFail($taskId);
-            $task->dependencies()->detach($dependsOnTaskId);
+        return DB::transaction(function () use ($task, $dependsOnTaskId) {
+            $this->taskRepository->removeDependency($task, $dependsOnTaskId);
 
             return true;
         });
@@ -72,30 +69,33 @@ class TaskDependencyService
      * DFS is a handy way to check things like “can Task B eventually reach Task A?”.
      *
      */
-    private function createCycle(int $taskId, int $dependsOnTaskId): bool
+    private function createCycle(Task $task, Task $dependsOnTaskId): bool
     {
         // DFS to detect cycles
         $visited = [];
-        $stack = [$dependsOnTaskId];
-
+        $stack = [$dependsOnTaskId->id];
+        $targetId = $task->id;
 
         while (!empty($stack)) {
             // If we reached the original task, cycle exists
-            $current = array_pop($stack);
-            if ($current === $taskId) {
+            $currentId = array_pop($stack);
+            if ($currentId === $targetId) {
                 return true;
             }
 
-            if (isset($visited[$current])) {
+            if (isset($visited[$currentId])) {
                 continue;
             }
 
-            $visited[$current] = true;
-            $deps = DB::table('task_dependencies')->where('task_id', $current)->pluck('depends_on_task_id');
-            foreach ($deps as $d) {
-                if (!isset($visited[$d])) {
-                    $stack[] = $d;
-                };
+            $visited[$currentId] = true;
+
+            $currentTask = $this->taskRepository->query()->findOrFail($currentId);
+            $deps = $this->taskRepository->getDependencyIds($currentTask);
+
+            foreach ($deps as $dId) {
+                if (!isset($visited[$dId])) {
+                    $stack[] = $dId;
+                }
             }
         }
 
@@ -104,11 +104,10 @@ class TaskDependencyService
 
     public function getIncompleteDependencies(int $taskId)
     {
-        $dependencyIds = DB::table('task_dependencies')
-            ->where('task_id', $taskId)
-            ->pluck('depends_on_task_id');
+        $task = $this->taskRepository->query()->findOrFail($taskId);
+        $dependencyIds = $this->taskRepository->getDependencyIds($task);
 
-        if ($dependencyIds->isEmpty()) {
+        if (empty($dependencyIds)) {
             return collect();
         }
 
@@ -116,4 +115,5 @@ class TaskDependencyService
             ->where('status', '!=', 'completed')
             ->get(['id', 'title', 'status']);
     }
+
 }

@@ -3,6 +3,7 @@
 use App\Http\Controllers\auth\AuthController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\Api\TaskController;
+use App\Http\Controllers\Api\SubtaskController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -12,6 +13,7 @@ Route::controller(AuthController::class)->group(function () {
 });
 
 Route::apiResource('projects', ProjectController::class)->parameters(['projects' => 'id']);
+Route::apiResource('tasks', TaskController::class);
 
 Route::controller(ProjectController::class)->group(function () {
     Route::get('/projects/status/{status}', 'getByStatus');
@@ -42,4 +44,21 @@ Route::controller(TaskController::class)->group(function (){
     Route::patch('/tasks/{task}/status', 'updateStatus');
     Route::patch('/tasks/{task}/priorty', 'updatePriority');
 });
+
+
+// Customize endpoint
+Route::controller(SubtaskController::class)->group( function (){
+    Route::post('tasks/subtasks', 'addSubtask');
+    Route::get('task/{taskId}/subtasks', 'listSubtasks');
+    Route::delete('tasks/subtasks', 'removeSubtasks');
+    Route::get('/tasks/{taskId}/parent', 'getParent');
+});
+
+
+// GET    /tasks/{task}/subtasks  → index()
+// POST   /tasks/{task}/subtasks  → store()
+// DELETE /tasks/{task}/subtasks/{subtask} → destroy()
+// If you want custom endpoints like getParent or addSubtask, you’ll need extra Route::get() definitions.
+
+Route::apiResource('tasks.subtasks', SubtaskController::class)->only(['index', 'store', 'destroy']);
 

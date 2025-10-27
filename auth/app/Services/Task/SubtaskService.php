@@ -28,20 +28,20 @@ class SubtaskService
 
     public function createHeirarchyCycle(int $parentId, int $childId): bool
     {
+        // Direct self-cycle
         if ($parentId === $childId) {
             return true;
         }
 
+        // Check if parent is reachable from child (adding parent->child would create a loop)
         $visited = [];
-        $stack = [$parentId];
-
+        $stack = [$childId];
 
         while (!empty($stack)) {
             $current = array_pop($stack);
 
-            if ($current === $childId) {
-
-                // parent is a descendant of a child -> cycle
+            if ($current === $parentId) {
+                // Parent is a descendant of child -> cycle
                 return true;
             }
 
@@ -50,12 +50,13 @@ class SubtaskService
             }
 
             $visited[$current] = true;
-            $children = Task::where('parent_id', $current)->pluck('id');
 
+            // Traverse downwards from the child through its existing children
+            $children = Task::where('parent_id', $current)->pluck('id');
             foreach ($children as $c) {
                 if (!isset($visited[$c])) {
                     $stack[] = $c;
-                };
+                }
             }
         }
 

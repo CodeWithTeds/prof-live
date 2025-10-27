@@ -44,6 +44,8 @@ Route::get('/dashboard', [AdminController::class, 'dashboard'])
 
 Route::prefix('admin')->middleware(['auth', AdminMiddleware::class])->group(function () {
     Route::get('/', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    \App\Http\Controllers\Admin\TaskAdminController::class;
+    Route::get('/tasks', [\App\Http\Controllers\Admin\TaskAdminController::class, 'index'])->name('admin.tasks');
 });
 
 if (app()->isLocal()) {

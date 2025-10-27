@@ -31,7 +31,8 @@ class TaskController extends BaseApiController
      */
     public function __construct(
         protected TaskRespository $taskRespository,
-        protected SubtaskService $subtaskService
+        protected SubtaskService $subtaskService,
+        protected TaskDependencyService $taskDependencyService
     ) {}
 
     /**
@@ -160,17 +161,11 @@ class TaskController extends BaseApiController
         $newStatus = $request->validated()['status'];
 
         if (in_array($newStatus, ['in_process', 'completed'])) {
-            $service = new TaskDependencyService();
-            if (!$service->dependenciesCompleted($task->id)) {
-                $incomplete = $service->getIncompleteDependencies($task->id);
+
+            if (!$this->taskDependencyService->dependenciesCompleted($task->id)) {
+                $incomplete = $this->taskDependencyService->getIncompleteDependencies($task->id);
                 return $this->errorResponse('Task has incomplete dependencies', Response::HTTP_NOT_FOUND, ['dependencies => incomplete']);
             }
-        }
-
-        // enforce incomplete subtasks
-        if (!$this->subtaskService->subtasksCompleted($task->id)) {
-            $incomplete = $this->subtaskService->getIncompleteSubtasks($task->id);
-            return $this->errorResponse('Task has incomplete subtask', Response::HTTP_NOT_FOUND, ['subtasks' => 'incomplete']);
         }
 
         $this->taskRespository->updateStatus($task, $newStatus);

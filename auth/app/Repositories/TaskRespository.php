@@ -60,18 +60,16 @@ class TaskRespository extends Repository
             ->get();
     }
 
-    public function removeDependency(int $taskId, int $dependsOnTaskId): bool
+    public function removeDependency(Task $task, Task $dependsOnTaskId): bool
     {
-        $task = $this->query()->findOrFail($taskId);
-        $task->dependencies()->detach($dependsOnTaskId);
+        $task->dependencies()->detach($dependsOnTaskId->id);
 
         return true;
     }
 
-    public function addDependency(int $taskId, int $dependsOnTaskId): bool
+    public function addDependency(Task $task, Task $dependsOnTaskId): bool
     {
-        $task = $this->query()->findOrFail($taskId);
-        $task->dependencies()->syncWithoutDetaching([$dependsOnTaskId]);
+        $task->dependencies()->syncWithoutDetaching([$dependsOnTaskId->id]);
 
         return true;
     }
@@ -85,13 +83,13 @@ class TaskRespository extends Repository
     public function getDependents(int $taskId): Collection
     {
         $task = $this->query()->findOrFail($taskId);
-        return $task->dependent()->get();
+        return $task->dependents()->get();
     }
 
-    public function getDependencyIds(int  $taskId): array
+    public function getDependencyIds(Task $task): array
     {
         return DB::table('task_dependencies')
-            ->where('task_id', $taskId)
+            ->where('task_id', $task->id)
             ->pluck('depends_on_task_id')
             ->all();
     }

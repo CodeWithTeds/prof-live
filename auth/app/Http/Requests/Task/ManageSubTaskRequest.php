@@ -22,7 +22,7 @@ class ManageSubTaskRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'child_id' => 'required|integer|exists:tasks,id',
         ];
     }
 }
