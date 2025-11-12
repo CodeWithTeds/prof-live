@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use App\Services\Task\TaskDependencyService;
 use App\Http\Controllers\Api\BaseApiController;
+use App\Http\Requests\Task\FilterTaskRequest;
 use App\Http\Requests\Task\GetTasksByUserRequest;
 use App\Http\Requests\Task\ManageSubTaskRequest;
 use App\Http\Requests\Task\UpdateTaskStatusRequest;
@@ -38,9 +39,10 @@ class TaskController extends BaseApiController
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request): JsonResponse
+    public function index(FilterTaskRequest $request): JsonResponse
     {
-        $perPage = $request->input('per_page', 15);
+        $filters = $request->validated();
+        $perPage = (int) ($filters['per_page'] ?? $request->input('per_page'));
         $tasks = $this->taskRespository->paginate($perPage);
 
         return $this->successResponse($tasks, 'Tasks Retrieved Successfully');

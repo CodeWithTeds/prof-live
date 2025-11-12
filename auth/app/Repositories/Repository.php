@@ -31,6 +31,7 @@ abstract class Repository
         return $this->model;
     }
 
+
     /**
      *
      * @return Builder

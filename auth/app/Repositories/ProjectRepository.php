@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use PHPUnit\Runner\DeprecationCollector\Collector;
 
-class ProjectRepository extends Repository{
+class ProjectRepository extends Repository
+{
 
     public function __construct(Project $model)
     {
